@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
-    "build": "tsc -b && vite build && node scripts/verify-build-output.mjs",
+    "build": "tsc -b && vite build && npm run verify:build",
+    "verify:build": "node scripts/verify-build-output.mjs",
+    "verify:release": "node scripts/create-release-manifest.mjs",
     "typecheck": "tsc -b --pretty false",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",

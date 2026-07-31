@@ -36,10 +36,14 @@ Varsayılan geliştirme adresi `http://127.0.0.1:5173` olur.
 ```bash
 npm run lint
 npm run typecheck
-npm run test
+npm test
 npm run build
 npm run verify:build
 ```
+
+`npm run build`, üretim çıktısını oluşturduktan sonra `verify:build` kontrolünü otomatik çalıştırır. `npm run verify:build`, var olan `dist/` çıktısını yeniden derlemeden doğrulamak için kullanılabilir.
+
+`npm run verify:release`, `dist/` klasörünü temizler; lint, typecheck, test, build, build çıktısı ve production dependency audit kontrollerini çalıştırır. Önceki aktif manifesti başlamadan kaldırır; yalnız bütün kontroller geçer ve kaynak hash'i değişmezse ignored `.council/release/manifest.json` dosyasını atomik olarak yeniden oluşturur. Başarısız denemede aktif manifest bırakmaz ve deploy yapmaz.
 
 ## Rotalar
 
@@ -51,10 +55,20 @@ Eski `/` ve `/projeler/:slug` bağlantıları Türkçe canonical rotalara yönle
 
 ## Dağıtım
 
-Proje Vercel için hazırlanmıştır. Production build `dist/` klasörüne yazılır. `VITE_SITE_URL`, canonical ve sitemap adresini farklı bir domain için değiştirmek amacıyla kullanılabilir.
+Proje Vercel için hazırlanmıştır. Production build `dist/` klasörüne yazılır. `VITE_SITE_URL`, canonical, Open Graph, sitemap ve robots adreslerini farklı bir origin için değiştirmek amacıyla kullanılabilir.
+
+Bash:
 
 ```bash
 VITE_SITE_URL=https://example.com npm run build
+```
+
+PowerShell:
+
+```powershell
+$env:VITE_SITE_URL = "https://example.com"
+npm run build
+Remove-Item Env:VITE_SITE_URL
 ```
 
 Vercel Web Analytics temel ziyaret ve sayfa görüntüleme bilgilerini cookiesiz biçimde toplar. Özel etkinlik takibi kullanılmaz.

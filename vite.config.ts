@@ -13,6 +13,9 @@ function localizedShells(siteUrl: string): Plugin {
       )
       if (!indexAsset || typeof indexAsset.source !== 'string') throw new Error('Built index.html was not available for route shells')
       const template = indexAsset.source
+      const defaultEntry = staticCanonicalEntries.find((entry) => entry.path === '/tr')
+      if (!defaultEntry) throw new Error('The default Turkish route was not available for index.html')
+      indexAsset.source = renderRouteShell(template, defaultEntry, siteUrl)
       const entries = [...staticCanonicalEntries, notFoundSeoEntry('tr'), notFoundSeoEntry('en')]
       entries.forEach((entry) => this.emitFile({ type: 'asset', fileName: `${entry.path.slice(1)}/index.html`, source: renderRouteShell(template, entry, siteUrl) }))
       this.emitFile({ type: 'asset', fileName: '404.html', source: renderRouteShell(template, notFoundSeoEntry('tr'), siteUrl) })
