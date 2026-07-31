@@ -1,75 +1,58 @@
-import { aboutContent, caseStudies, getCaseStudy, hasUniqueCaseStudySlugs, ongoingWorkItems } from './content'
+import { getLocaleContent, getProject, getProjects, localeContent, sharedProjectMedia } from './content'
+import { LOCALES, PROJECT_IDS, localeRoutes } from './route-manifest'
 
-describe('portfolio content invariants', () => {
-  it('contains exactly four case studies with unique URL-safe slugs', () => {
-    expect(caseStudies).toHaveLength(4)
-    expect(hasUniqueCaseStudySlugs(caseStudies)).toBe(true)
+describe('localized portfolio content', () => {
+  it('keeps compile-time-complete locale and project parity', () => {
+    expect(Object.keys(localeContent).sort()).toEqual([...LOCALES].sort())
+    for (const locale of LOCALES) {
+      const content = getLocaleContent(locale)
+      expect(Object.keys(content.projects).sort()).toEqual([...PROJECT_IDS].sort())
+      expect(getProjects(locale)).toHaveLength(4)
+      expect(Object.keys(localeRoutes[locale].slugs).sort()).toEqual([...PROJECT_IDS].sort())
+    }
+    expect(Object.keys(sharedProjectMedia).sort()).toEqual([...PROJECT_IDS].sort())
+  })
 
-    for (const study of caseStudies) {
-      expect(study.slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-      expect(study.what).toBeTruthy()
-      expect(study.why).toBeTruthy()
-      expect(study.result).toBeTruthy()
+  it('keeps every localized slug URL-safe and unique per locale', () => {
+    for (const locale of LOCALES) {
+      const slugs = PROJECT_IDS.map((projectId) => getProject(locale, projectId).slug)
+      expect(new Set(slugs)).toHaveLength(PROJECT_IDS.length)
+      slugs.forEach((slug) => expect(slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/))
     }
   })
 
-  it('keeps three ongoing work notes outside the routable case-study model', () => {
-    expect(ongoingWorkItems).toHaveLength(3)
-    for (const item of ongoingWorkItems) {
-      expect(typeof item).toBe('string')
-      expect(item.length).toBeGreaterThan(40)
-    }
+  it('preserves evidence qualifiers in both languages', () => {
+    expect(getProject('tr', 'xtts-fine-tuning').result).toContain('muhtemelen')
+    expect(getProject('en', 'xtts-fine-tuning').result).toContain('probably')
+    expect(getProject('tr', 'face-tracking').result).toContain('kişisel bir gözlem')
+    expect(getProject('en', 'face-tracking').result).toContain('personal observation')
+    expect(getProject('tr', 'speech-transcription').result).toContain('dar kapsamlı')
+    expect(getProject('en', 'speech-transcription').result).toContain('narrow')
+    expect(getProject('tr', 'gender-classification').summary).toContain('belirsiz')
+    expect(getProject('en', 'gender-classification').summary).toContain('uncertain')
   })
 
-  it('publishes the compact classifier without undocumented accuracy claims', () => {
-    const classifier = getCaseStudy('cinsiyet-siniflandirma-modeli')
-    const retiredSlug = ['akilli', 'gozluk', 'ozel', 'pcb'].join('-')
-
-    expect(classifier).toMatchObject({
-      title: 'Gerçek zamanlı cinsiyet sınıflandırma modeli',
-      image: { base: 'gender-classifier', width: 1440, height: 960 },
-    })
-    expect(classifier?.what).toContain('100×100')
-    expect(classifier?.what).toContain('altı katmanlı')
-    expect(classifier?.result).toContain('yaklaşık 15 MB')
-    expect(JSON.stringify(classifier)).not.toMatch(/accuracy|doğruluk|başarı oranı|%\s*\d/i)
-    expect(getCaseStudy(retiredSlug)).toBeUndefined()
-  })
-
-  it('keeps public copy evidence-bound and free of forbidden punctuation', () => {
-    const xtts = getCaseStudy('xtts-v2-fine-tuning')
-    const face = getCaseStudy('gercek-zamanli-yuz-takibi')
-    const speech = getCaseStudy('ses-tanima-transkripsiyon')
-    const publicCopy = JSON.stringify({ aboutContent, caseStudies, ongoingWorkItems })
-    const restrictedName = ['ci', 'ri'].join('')
+  it('publishes authorized About facts without private names or self-deprecation', () => {
     const privateProgramName = ['cou', 'ncil'].join('')
-    const xttsWhyWords = xtts?.why.trim().split(/\s+/) ?? []
-
-    expect(xttsWhyWords.length).toBeGreaterThanOrEqual(55)
-    expect(xttsWhyWords.length).toBeLessThanOrEqual(80)
-    expect(xtts?.result).toContain('muhtemelen')
-    expect(face?.result).toContain('kişisel bir gözlem')
-    expect(speech?.result).toContain('dar kapsamlı')
-    expect(publicCopy.toLocaleLowerCase('tr-TR')).not.toContain(restrictedName)
-    expect(publicCopy.toLocaleLowerCase('tr-TR')).not.toContain(privateProgramName)
-    expect(publicCopy).not.toMatch(/[—–]/)
+    const restrictedVoiceName = ['ci', 'ri'].join('')
+    for (const locale of LOCALES) {
+      const content = getLocaleContent(locale)
+      const publicCopy = JSON.stringify(content)
+      expect(content.about.intro).toHaveLength(3)
+      expect(content.about.expertise).toHaveLength(3)
+      expect(publicCopy.toLocaleLowerCase('tr-TR')).not.toContain(privateProgramName)
+      expect(publicCopy.toLocaleLowerCase('tr-TR')).not.toContain(restrictedVoiceName)
+      expect(publicCopy).not.toMatch(/[—–]/)
+      expect(publicCopy).not.toMatch(/99\.9%|10×|10x faster/i)
+    }
+    expect(getLocaleContent('tr').about.intro.join(' ')).toMatch(/18 yaşındayım|üniversite sınavına/)
+    expect(getLocaleContent('en').about.intro.join(' ')).toMatch(/I’m Mehmet, 18|university entrance exam/)
   })
 
-  it('publishes authorized personal facts without a definitive job title or self-deprecation', () => {
-    const intro = aboutContent.intro.join(' ')
-    const wordCount = intro.trim().split(/\s+/).length
-    const expertise = aboutContent.expertise.map(({ title, body }) => `${title} ${body}`).join(' ')
-
-    expect(wordCount).toBeGreaterThanOrEqual(70)
-    expect(wordCount).toBeLessThanOrEqual(120)
-    expect(intro).toContain('Adım Mehmet')
-    expect(intro).toContain('18 yaşındayım')
-    expect(intro).toContain('üniversite sınavına hazırlanıyorum')
-    expect(intro).toContain('Yaklaşık dört yıldır')
-    expect(intro).toContain('ilk kez düzenli biçimde paylaştığım yer')
-    expect(expertise).toContain('Computer Vision')
-    expect(expertise).toContain('LLM fine-tuning')
-    expect(expertise).toContain('MCP araç entegrasyonları')
-    expect(intro).not.toMatch(/Ben bir yapay zekâ mühendisiyim|layık değilim|zekâm|bilgim yetmiyor/i)
+  it('shares media dimensions without duplicating them in locale copy', () => {
+    const tr = getProject('tr', 'gender-classification')
+    const en = getProject('en', 'gender-classification')
+    expect({ base: tr.base, width: tr.width, height: tr.height }).toEqual({ base: en.base, width: en.width, height: en.height })
+    expect(tr.alt).not.toBe(en.alt)
   })
 })

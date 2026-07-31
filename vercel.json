@@ -1,3 +1,13 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "routes": [
+    { "src": "/", "status": 308, "headers": { "Location": "/tr" } },
+    { "src": "/projeler/xtts-v2-fine-tuning", "status": 308, "headers": { "Location": "/tr/projeler/xtts-v2-fine-tuning" } },
+    { "src": "/projeler/gercek-zamanli-yuz-takibi", "status": 308, "headers": { "Location": "/tr/projeler/gercek-zamanli-yuz-takibi" } },
+    { "src": "/projeler/ses-tanima-transkripsiyon", "status": 308, "headers": { "Location": "/tr/projeler/ses-tanima-transkripsiyon" } },
+    { "src": "/projeler/cinsiyet-siniflandirma-modeli", "status": 308, "headers": { "Location": "/tr/projeler/cinsiyet-siniflandirma-modeli" } },
+    { "handle": "filesystem" },
+    { "src": "/en(?:/.*)?", "dest": "/en/404/index.html", "status": 404 },
+    { "src": "/tr(?:/.*)?", "dest": "/tr/404/index.html", "status": 404 },
+    { "src": "/.*", "dest": "/404.html", "status": 404 }
+  ]
 }

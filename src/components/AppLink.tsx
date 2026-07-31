@@ -6,9 +6,11 @@ type AppLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> &
   Readonly<{
     to: string
     state?: AppHistoryState | null
+    replace?: boolean
+    scroll?: 'top' | 'hash' | 'preserve'
   }>
 
-export function AppLink({ to, state = null, onClick, ...props }: AppLinkProps) {
+export function AppLink({ to, state = null, replace = false, scroll, onClick, ...props }: AppLinkProps) {
   const handleClick = (event: MouseEvent<HTMLAnchorElement>) => {
     onClick?.(event)
     if (
@@ -23,7 +25,7 @@ export function AppLink({ to, state = null, onClick, ...props }: AppLinkProps) {
     }
 
     event.preventDefault()
-    navigate(to, state)
+    navigate(to, { state, replace, scroll })
   }
 
   return <a href={to} onClick={handleClick} {...props} />

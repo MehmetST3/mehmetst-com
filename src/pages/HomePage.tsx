@@ -1,5 +1,9 @@
-import { aboutContent, caseStudies, ongoingWorkItems } from '../content'
+import { getProjects } from '../content'
 import { useReveal } from '../hooks/useReveal'
+import { homePath, localeRoutes, projectPath, sectionHash } from '../route-manifest'
+import { openProjectModal, useBackgroundRestore } from '../router'
+import type { AppLocation } from '../router'
+import type { LocaleContent } from '../types'
 import { AppLink } from '../components/AppLink'
 import { Header } from '../components/Header'
 import { ResponsiveImage } from '../components/ResponsiveImage'
@@ -22,51 +26,48 @@ function ExpertiseIcon({ index }: Readonly<{ index: number }>) {
   return <svg className={`expertise-icon${index === 0 ? ' expertise-icon--vision' : ''}`} viewBox="0 0 20 20" aria-hidden="true" focusable="false">{paths[index]}</svg>
 }
 
-export function HomePage() {
+type HomePageProps = Readonly<{
+  content: LocaleContent
+  location: AppLocation
+}>
+
+export function HomePage({ content, location }: HomePageProps) {
   useReveal()
+  useBackgroundRestore(`${location.pathname}${location.hash}${location.state?.kind ?? 'home'}`)
+  const locale = content.locale
+  const hashes = localeRoutes[locale].hashes
+  const projects = getProjects(locale)
 
   return (
     <>
-      <a className="skip-link" href="#ana-icerik">
-        Ana içeriğe geç
-      </a>
-      <Header />
-      <main id="ana-icerik">
+      <a className="skip-link" href="#main-content">{content.aria.skipHome}</a>
+      <Header content={content} location={location} />
+      <main id="main-content">
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-inner">
-            <h1 className="reveal" id="hero-title" data-reveal data-reveal-key="hero-name">
-              Mehmet Tüysüz
-            </h1>
-            <p className="hero-intro reveal reveal-delay-1" data-reveal data-reveal-key="hero-intro">
-              Yapay zekâ, gerçek zamanlı algı ve özel donanım arasında çalışan sistemler geliştiriyorum.
-            </p>
+            <h1 className="reveal" id="hero-title" data-reveal data-reveal-key="hero-name">{content.hero.title}</h1>
+            <p className="hero-intro reveal reveal-delay-1" data-reveal data-reveal-key="hero-intro">{content.hero.intro}</p>
             <div className="hero-actions reveal reveal-delay-2" data-reveal data-reveal-key="hero-actions">
-              <AppLink className="primary-link" to="/#projeler">
-                Projeler
-                <DirectionCue />
+              <AppLink className="primary-link" to={`${homePath(locale)}${sectionHash(locale, 'projects')}`}>
+                {content.hero.projectsCta}<DirectionCue />
               </AppLink>
               <a className="secondary-link" href="https://github.com/MehmetST3" target="_blank" rel="noreferrer">
-                GitHub
-                <DirectionCue external />
+                GitHub<DirectionCue external />
               </a>
             </div>
           </div>
         </section>
 
-        <section className="about section-shell section-line" id="hakkimda" aria-labelledby="about-title" data-line-reveal data-reveal-key="about-line">
-          <h2 className="section-title reveal" id="about-title" data-reveal data-reveal-key="about-title">
-            Hakkımda
-          </h2>
+        <section className="about section-shell section-line" id={hashes.about} aria-labelledby="about-title" data-line-reveal data-reveal-key="about-line">
+          <h2 className="section-title reveal" id="about-title" data-reveal data-reveal-key="about-title">{content.about.title}</h2>
           <div className="about-content">
             <div className="about-copy">
-              {aboutContent.intro.map((paragraph, index) => (
-                <p className="reveal about-paragraph-reveal" data-reveal data-reveal-key={`about-copy-${index}`} key={paragraph}>
-                  {paragraph}
-                </p>
+              {content.about.intro.map((paragraph, index) => (
+                <p className="reveal about-paragraph-reveal" data-reveal data-reveal-key={`about-copy-${index}`} key={paragraph}>{paragraph}</p>
               ))}
             </div>
-            <dl className="about-expertise" aria-label="Çalışma alanları">
-              {aboutContent.expertise.map((item, index) => (
+            <dl className="about-expertise" aria-label={content.aria.expertiseList}>
+              {content.about.expertise.map((item, index) => (
                 <div className="expertise-reveal" data-reveal data-reveal-key={`about-expertise-${index}`} key={item.title}>
                   <dt><ExpertiseIcon index={index} />{item.title}</dt>
                   <dd>{item.body}</dd>
@@ -76,76 +77,65 @@ export function HomePage() {
           </div>
         </section>
 
-        <section className="projects section-shell section-line" id="projeler" aria-labelledby="projects-title" data-line-reveal data-reveal-key="projects-line">
+        <section className="projects section-shell section-line" id={hashes.projects} aria-labelledby="projects-title" data-line-reveal data-reveal-key="projects-line">
           <header className="projects-heading reveal" data-reveal data-reveal-key="projects-heading">
-            <h2 className="section-title" id="projects-title">
-              Seçili projeler
-            </h2>
-            <p>Ses, görüntü ve donanım katmanlarından dört çalışma.</p>
+            <h2 className="section-title" id="projects-title">{content.projectsSection.title}</h2>
+            <p>{content.projectsSection.intro}</p>
           </header>
 
           <div className="project-list">
-            {caseStudies.map((study, index) => (
-              <article className={`project-row${index % 2 === 1 ? ' project-row--reverse' : ''}`} key={study.slug}>
-                <AppLink
-                  className="project-media clip-reveal"
-                  to={`/projeler/${study.slug}`}
-                  state={{ fromHome: true }}
-                  aria-label={`${study.shortTitle} detayını aç`}
-                  data-clip-reveal
-                  data-reveal-key={`project-image-${study.slug}`}
-                >
-                  <ResponsiveImage
-                    base={study.image.base}
-                    alt={study.image.alt}
-                    width={study.image.width}
-                    height={study.image.height}
-                    sizes="(max-width: 760px) calc(100vw - 24px), 54vw"
-                  />
-                </AppLink>
-                <div className="project-copy reveal reveal-delay-1" data-reveal data-reveal-key={`project-copy-${study.slug}`}>
-                  <div className="project-index" aria-hidden="true">
-                    <span>{String(index + 1).padStart(2, '0')}</span>
-                  </div>
-                  <h3>
-                    <AppLink to={`/projeler/${study.slug}`} state={{ fromHome: true }}>
-                      {study.title}
-                    </AppLink>
-                  </h3>
-                  <p>{study.summary}</p>
-                  <AppLink className="text-link" to={`/projeler/${study.slug}`} state={{ fromHome: true }}>
-                    İncele
+            {projects.map((study, index) => {
+              const to = projectPath(locale, study.id)
+              const openFrom = (triggerId: string) => (event: React.MouseEvent<HTMLAnchorElement>) => {
+                if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+                event.preventDefault()
+                openProjectModal(locale, study.id, triggerId)
+              }
+              const mediaTrigger = `project-trigger-${study.id}-media`
+              const titleTrigger = `project-trigger-${study.id}-title`
+              const ctaTrigger = `project-trigger-${study.id}-cta`
+              return (
+                <article className={`project-row${index % 2 === 1 ? ' project-row--reverse' : ''}`} data-project={study.id} key={study.id}>
+                  <AppLink
+                    id={mediaTrigger}
+                    className="project-media clip-reveal"
+                    to={to}
+                    onClick={openFrom(mediaTrigger)}
+                    aria-label={content.aria.openProject(study.shortTitle)}
+                    data-clip-reveal
+                    data-reveal-key={`project-image-${study.id}`}
+                  >
+                    <ResponsiveImage base={study.base} alt={study.alt} width={study.width} height={study.height} sizes="(max-width: 760px) calc(100vw - 24px), 54vw" />
                   </AppLink>
-                </div>
-              </article>
-            ))}
+                  <div className="project-copy reveal reveal-delay-1" data-reveal data-reveal-key={`project-copy-${study.id}`}>
+                    <div className="project-index" aria-hidden="true"><span>{String(index + 1).padStart(2, '0')}</span></div>
+                    <h3><AppLink id={titleTrigger} to={to} onClick={openFrom(titleTrigger)}>{study.title}</AppLink></h3>
+                    <p>{study.summary}</p>
+                    <AppLink id={ctaTrigger} className="text-link" to={to} onClick={openFrom(ctaTrigger)}>{content.projectsSection.inspect}</AppLink>
+                  </div>
+                </article>
+              )
+            })}
           </div>
         </section>
 
-        <section className="building section-shell section-line" id="devam-eden" aria-labelledby="building-title" data-line-reveal data-reveal-key="building-line">
+        <section className="building section-shell section-line" id={hashes.ongoing} aria-labelledby="building-title" data-line-reveal data-reveal-key="building-line">
           <div className="building-intro">
-            <p className="building-label reveal" data-reveal data-reveal-key="building-label">
-              Şu anda
-            </p>
-            <h2 className="reveal reveal-delay-1" id="building-title" data-reveal data-reveal-key="building-title">
-              Devam eden çalışmalar
-            </h2>
-            <p className="building-summary reveal reveal-delay-2" data-reveal data-reveal-key="building-summary">
-              Şu anda odağımda olan üç çalışma hattı.
-            </p>
+            <p className="building-label reveal" data-reveal data-reveal-key="building-label">{content.ongoing.eyebrow}</p>
+            <h2 className="reveal reveal-delay-1" id="building-title" data-reveal data-reveal-key="building-title">{content.ongoing.title}</h2>
+            <p className="building-summary reveal reveal-delay-2" data-reveal data-reveal-key="building-summary">{content.ongoing.intro}</p>
           </div>
-          <ol className="building-list" aria-label="Devam eden çalışmalar listesi">
-            {ongoingWorkItems.map((item, index) => (
+          <ol className="building-list" aria-label={content.aria.ongoingList}>
+            {content.ongoing.items.map((item, index) => (
               <li className="ongoing-row-reveal" data-reveal data-reveal-key={`building-item-${index}`} key={item}>
-                <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
-                <p>{item}</p>
+                <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span><p>{item}</p>
               </li>
             ))}
           </ol>
         </section>
       </main>
 
-      <SiteFooter />
+      <SiteFooter content={content} />
     </>
   )
 }

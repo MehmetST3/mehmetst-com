@@ -1,31 +1,21 @@
-import { useEffect } from 'react'
+import { homePath } from '../route-manifest'
+import type { AppLocation } from '../router'
+import type { LocaleContent } from '../types'
 import { AppLink } from '../components/AppLink'
 import { Header } from '../components/Header'
 
-export function NotFoundPage() {
-  useEffect(() => {
-    const previousTitle = document.title
-    document.title = 'Sayfa bulunamadı | Mehmet Tüysüz'
-    return () => {
-      document.title = previousTitle
-    }
-  }, [])
-
+export function NotFoundPage({ content, location }: Readonly<{ content: LocaleContent; location: AppLocation }>) {
   return (
     <>
-      <a className="skip-link" href="#bulunamadi">
-        Ana içeriğe geç
-      </a>
-      <Header />
-      <main className="not-found" id="bulunamadi">
+      <a className="skip-link" href="#not-found">{content.aria.skipHome}</a>
+      <Header content={content} location={location} />
+      <main className="not-found" id="not-found">
         <div className="not-found-inner">
-          <p>Sayfa bulunamadı</p>
-          <h1>Burada bir sayfa yok.</h1>
+          <p>{content.notFound.eyebrow}</p>
+          <h1>{content.notFound.title}</h1>
           <div className="not-found-copy">
-            <p>Bağlantı değişmiş veya yanlış yazılmış olabilir.</p>
-            <AppLink className="text-link" to="/">
-              Ana sayfaya dön
-            </AppLink>
+            <p>{content.notFound.body}</p>
+            <AppLink className="text-link" to={homePath(content.locale)}>{content.notFound.backHome}</AppLink>
           </div>
         </div>
       </main>
