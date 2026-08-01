@@ -1,74 +1,49 @@
-# Mehmet Tüysüz Portfolio
+# Mehmet Tüysüz
 
-Mehmet Tüysüz'ün Computer Vision, LLM çalışmaları ve agentic yazılım sistemleri üzerine yaptığı projeleri paylaştığı kişisel site.
+Bilgisayarla görme, LLM çalışmaları ve agentic yazılım sistemleri üzerine projelerimi paylaştığım kişisel portfolyo sitesi.
 
-## Özellikler
+**Canlı site:** https://mehmetst-com.vercel.app
 
-- Türkçe ve İngilizce içerik
-- Paylaşılabilir, yerelleştirilmiş proje bağlantıları
-- Ana sayfadan açılan erişilebilir proje detay pencereleri
-- Doğrudan URL'de tam sayfa proje görünümü
-- Dil değişiminde aynı sayfa, proje ve kaydırma konumunun korunması
-- Vercel Web Analytics entegrasyonu
-- Route-aware metadata, canonical, hreflang, sitemap ve 404 çıktıları
-- Reduced-motion desteği ve klavye erişimi
+## Öne çıkanlar
+
+- Türkçe ve İngilizce yerelleştirilmiş rotalar ve içerikler
+- Ana sayfada erişilebilir modal, paylaşılabilir bağlantılarda doğrudan proje detay görünümü
+- Canonical, hreflang, Open Graph, sitemap, robots ve 404 için statik SEO çıktıları
+- Farklı ekranlara ve reduced-motion tercihine uyumlu native-dark tasarım
 
 ## Teknolojiler
 
-- React 19
+- React
 - TypeScript
 - Vite
-- Radix Toggle Group tabanlı dil seçici
-- Vercel Web Analytics
+- Radix UI
 - Vitest ve Testing Library
+- Vercel Analytics
 
-## Yerel geliştirme
+## Gereksinimler
+
+- Node.js `^20.19.0 || >=22.12.0`
+- npm
+
+## Hızlı başlangıç
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Varsayılan geliştirme adresi `http://127.0.0.1:5173` olur.
+## Komutlar
 
-## Kontroller
-
-```bash
-npm run lint
-npm run typecheck
-npm test
-npm run build
-npm run verify:build
-```
-
-`npm run build`, üretim çıktısını oluşturduktan sonra `verify:build` kontrolünü otomatik çalıştırır. `npm run verify:build`, var olan `dist/` çıktısını yeniden derlemeden doğrulamak için kullanılabilir.
-
-`npm run verify:release`, `dist/` klasörünü temizler; lint, typecheck, test, build, build çıktısı ve production dependency audit kontrollerini çalıştırır. Önceki aktif manifesti başlamadan kaldırır; yalnız bütün kontroller geçer ve kaynak hash'i değişmezse ignored `.council/release/manifest.json` dosyasını atomik olarak yeniden oluşturur. Başarısız denemede aktif manifest bırakmaz ve deploy yapmaz.
-
-## Rotalar
-
-- `/tr` ve `/en`
-- `/tr/projeler/:slug`
-- `/en/projects/:slug`
-
-Eski `/` ve `/projeler/:slug` bağlantıları Türkçe canonical rotalara yönlendirilir.
+| Komut | Açıklama |
+| --- | --- |
+| `npm run dev` | Yerel geliştirme sunucusunu başlatır. |
+| `npm run build` | TypeScript kontrolünü çalıştırır, `dist/` çıktısını üretir ve çıktıyı doğrular. |
+| `npm run lint` | ESLint denetimini çalıştırır. |
+| `npm run typecheck` | TypeScript proje kontrolünü çalıştırır. |
+| `npm test` | Testleri tek sefer çalıştırır. |
+| `npm run test:watch` | Testleri izleme modunda çalıştırır. |
+| `npm run verify:build` | Mevcut `dist/` içindeki statik rotaları ve SEO çıktılarını doğrular. |
 
 ## Dağıtım
 
-Proje Vercel için hazırlanmıştır. Production build `dist/` klasörüne yazılır. `VITE_SITE_URL`, canonical, Open Graph, sitemap ve robots adreslerini farklı bir origin için değiştirmek amacıyla kullanılabilir.
-
-Bash:
-
-```bash
-VITE_SITE_URL=https://example.com npm run build
-```
-
-PowerShell:
-
-```powershell
-$env:VITE_SITE_URL = "https://example.com"
-npm run build
-Remove-Item Env:VITE_SITE_URL
-```
-
-Vercel Web Analytics temel ziyaret ve sayfa görüntüleme bilgilerini cookiesiz biçimde toplar. Özel etkinlik takibi kullanılmaz.
+Vercel, üretim derlemesindeki `dist/` dizinini sunar. Farklı bir canonical origin kullanmak için derleme sırasında isteğe bağlı `VITE_SITE_URL` ortam değişkeni tanımlanabilir.
